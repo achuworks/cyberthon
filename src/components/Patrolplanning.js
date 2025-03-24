@@ -1,18 +1,25 @@
-import { MapContainer, TileLayer, CircleMarker, Popup } from "react-leaflet";
+import { MapContainer, TileLayer, CircleMarker, Popup, Polyline } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import { useState, useEffect } from "react";
 import axios from "axios";
 
-
 const getCrimeColor = (severity) => {
   if (severity >= 5) return "red";     
   if (severity >= 3) return "orange"; 
-  if (severity === 1) return "#D5006D";
   return "blue";                        
 };
 
-const LeafletMap = () => {
+const calculatePatrolRoute = (hotspots) => {
+  const sortedHotspots = [...hotspots].sort((a, b) => b.severity - a.severity);
+  
+  const maxHotspotsToCover = 5;
+  
+  return sortedHotspots.slice(0, maxHotspotsToCover);
+};
+
+const Patrol = () => { 
   const [hotspots, setHotspots] = useState([]);
+  const [patrolRoute, setPatrolRoute] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -20,6 +27,7 @@ const LeafletMap = () => {
     axios.get("http://localhost:5000/hotspots")
       .then(response => {
         setHotspots(response.data);
+        setPatrolRoute(calculatePatrolRoute(response.data)); 
         setLoading(false);
       })
       .catch(error => {
@@ -36,6 +44,7 @@ const LeafletMap = () => {
       {!loading && !error && (
         <MapContainer center={[11.0168, 76.9558]} zoom={12} style={{ height: "850px", width: "100%" }}>
           <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+          
           {hotspots.map((hotspot) => (
             <CircleMarker
               key={hotspot.id}
@@ -56,10 +65,20 @@ const LeafletMap = () => {
               </Popup>
             </CircleMarker>
           ))}
+          
+         
+          {patrolRoute.length > 0 && (
+            <Polyline
+              positions={patrolRoute.map(hotspot => [hotspot.latitude, hotspot.longitude])}
+              color="green"
+              weight={3}
+              opacity={0.6}
+            />
+          )}
         </MapContainer>
       )}
     </>
   );
 };
 
-export default LeafletMap;
+export default Patrol; 

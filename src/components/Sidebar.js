@@ -48,13 +48,7 @@ function Sideebar() {
           > 
             Hotspot Mapping
           </MenuItem>
-          <MenuItem 
-            icon={<FileText size={20} />}
-            component={<Link to="/overview" />} 
-            active={isActive("/overview")}
-          > 
-            Overview
-          </MenuItem>
+          
           <MenuItem 
             icon={<Activity size={20} />}
             component={<Link to="/behaviour" />} 
@@ -71,15 +65,15 @@ function Sideebar() {
           </MenuItem>
           <MenuItem 
             icon={<AlertTriangle size={20} />}
-            component={<Link to="/accident-prone" />} 
-            active={isActive("/accident-prone")}
+            component={<Link to="/accident" />} 
+            active={isActive("/accident")}
           > 
             Accident-prone area identification
           </MenuItem>
           <MenuItem 
             icon={<BookOpen size={20} />}
-            component={<Link to="/legal" />} 
-            active={isActive("/legal")}
+            component={<Link to="/legall" />} 
+            active={isActive("/legall")}
           > 
             Legal Classification
           </MenuItem>
