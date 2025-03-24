@@ -1,36 +1,40 @@
-import { MapContainer, TileLayer, CircleMarker, Popup, Polyline } from "react-leaflet";
-import "leaflet/dist/leaflet.css";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import { GoogleMap, LoadScript, MarkerF, InfoWindowF } from "@react-google-maps/api";
 import axios from "axios";
 
-const getCrimeColor = (severity) => {
-  if (severity >= 5) return "red";     
-  if (severity >= 3) return "orange"; 
-  return "blue";                        
+const mapContainerStyle = {
+  width: "100%",
+  height: "850px",
 };
 
-const calculatePatrolRoute = (hotspots) => {
-  const sortedHotspots = [...hotspots].sort((a, b) => b.severity - a.severity);
-  
-  const maxHotspotsToCover = 5;
-  
-  return sortedHotspots.slice(0, maxHotspotsToCover);
+const center = {
+  lat: 11.0168, 
+  lng: 76.9558,
 };
 
-const Patrol = () => { 
+const getCrimeIcon = (severity) => {
+  if (severity >= 5) return "https://raw.githubusercontent.com/Concept211/Google-Maps-Markers/master/images/marker_red.png"; 
+
+
+  if (severity >= 3) return "http://maps.google.com/mapfiles/ms/icons/yellow-dot.png";
+  if (severity === 1) return "http://maps.google.com/mapfiles/ms/icons/pink-dot.png";
+  return "http://maps.google.com/mapfiles/ms/icons/blue-dot.png";
+};
+
+const Patrol = () => {
   const [hotspots, setHotspots] = useState([]);
-  const [patrolRoute, setPatrolRoute] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selectedHotspot, setSelectedHotspot] = useState(null);
 
   useEffect(() => {
-    axios.get("http://localhost:5000/hotspots")
-      .then(response => {
+    axios
+      .get("http://localhost:5000/hotspots")
+      .then((response) => {
         setHotspots(response.data);
-        setPatrolRoute(calculatePatrolRoute(response.data)); 
         setLoading(false);
       })
-      .catch(error => {
+      .catch((error) => {
         console.error("Error fetching crime hotspots:", error);
         setError("Failed to load hotspots.");
         setLoading(false);
@@ -38,47 +42,39 @@ const Patrol = () => {
   }, []);
 
   return (
-    <>
+    <LoadScript googleMapsApiKey="AIzaSyBc65FrtspVHSZsqXxeUa0ZWWLOBJ9etos">
       {loading && <div>Loading...</div>}
       {error && <div>{error}</div>}
       {!loading && !error && (
-        <MapContainer center={[11.0168, 76.9558]} zoom={12} style={{ height: "850px", width: "100%" }}>
-          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-          
+        <GoogleMap mapContainerStyle={mapContainerStyle} center={center} zoom={12}>
           {hotspots.map((hotspot) => (
-            <CircleMarker
+            <MarkerF
               key={hotspot.id}
-              center={[hotspot.latitude, hotspot.longitude]}
-              radius={8}
-              fillColor={getCrimeColor(hotspot.severity)}
-              color="black"
-              weight={1}
-              fillOpacity={0.7}
-            >
-              <Popup>
-                <b>{hotspot.hotspot_name}</b> <br /> 
-                Crime Type: {hotspot.crime_type} <br />
-                Reported Incidents: {hotspot.reported_incidents} <br />
-                Severity: {hotspot.severity} <br />
-                Last Crime Date: {hotspot.last_crime_date} <br />
-                Patrol Recommendations: {hotspot.patrol_recommendations}
-              </Popup>
-            </CircleMarker>
-          ))}
-          
-         
-          {patrolRoute.length > 0 && (
-            <Polyline
-              positions={patrolRoute.map(hotspot => [hotspot.latitude, hotspot.longitude])}
-              color="green"
-              weight={3}
-              opacity={0.6}
+              position={{ lat: hotspot.latitude, lng: hotspot.longitude }}
+              icon={getCrimeIcon(hotspot.severity)}
+              onClick={() => setSelectedHotspot(hotspot)}
             />
+          ))}
+
+          {selectedHotspot && (
+            <InfoWindowF
+              position={{ lat: selectedHotspot.latitude, lng: selectedHotspot.longitude }}
+              onCloseClick={() => setSelectedHotspot(null)}
+            >
+              <div>
+                <b>{selectedHotspot.hotspot_name}</b> <br />
+                Crime Type: {selectedHotspot.crime_type} <br />
+                Reported Incidents: {selectedHotspot.reported_incidents} <br />
+                Severity: {selectedHotspot.severity} <br />
+                Last Crime Date: {selectedHotspot.last_crime_date} <br />
+                Patrol Recommendations: {selectedHotspot.patrol_recommendations}
+              </div>
+            </InfoWindowF>
           )}
-        </MapContainer>
+        </GoogleMap>
       )}
-    </>
+    </LoadScript>
   );
 };
 
-export default Patrol; 
+export default Patrol;

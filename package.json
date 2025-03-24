@@ -21,6 +21,7 @@
     "leaflet.heat": "^0.2.0",
     "lucide-react": "^0.477.0",
     "mongoose": "^8.12.1",
+    "ol": "^10.4.0",
     "react": "^19.0.0",
     "react-csv": "^2.2.2",
     "react-dom": "^19.0.0",
