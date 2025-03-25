@@ -30,6 +30,15 @@ app.get("/accident_data", (req, res) => {
     }
   });
 });
+app.get("/police_stations", (req, res) => {
+  db.query("SELECT * FROM police_stations", (err, result) => {
+    if (err) {
+      res.status(500).send(err);
+    } else {
+      res.json(result);
+    }
+  });
+});
 
 app.listen(5000, () => {
   console.log("Server running on port 5000");
