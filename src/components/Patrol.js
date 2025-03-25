@@ -1,4 +1,4 @@
-import { MapContainer, TileLayer, Marker, CircleMarker, Popup } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, CircleMarker, Popup, Polyline } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import { useState, useEffect } from "react";
 import axios from "axios";
@@ -18,11 +18,25 @@ const getCrimeColor = (severity) => {
   return "blue";                        
 };
 
+// Haversine formula to calculate the distance (in km) between two lat/lng points
+const getDistance = (lat1, lon1, lat2, lon2) => {
+  const R = 6371; // Earth's radius in km
+  const dLat = (lat2 - lat1) * (Math.PI / 180);
+  const dLon = (lon2 - lon1) * (Math.PI / 180);
+  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c; // Distance in km
+};
+
 const Patrol = () => {
   const [stations, setStations] = useState([]);
   const [hotspots, setHotspots] = useState([]);
+  const [route, setRoute] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const patrolRadius = 20; // Define patrol coverage radius (in km)
 
   useEffect(() => {
     axios.get("http://localhost:5000/police_stations")
@@ -41,6 +55,35 @@ const Patrol = () => {
       .finally(() => setLoading(false));
   }, []);
 
+  const fetchPatrolRoute = async (station) => {
+    try {
+      // Filter hotspots within the defined patrol radius
+      const nearbyHotspots = hotspots.filter(h =>
+        getDistance(station.latitude, station.longitude, h.latitude, h.longitude) <= patrolRadius
+      );
+
+      if (nearbyHotspots.length === 0) {
+        alert("No hotspots available in the surrounding area.");
+        return;
+      }
+
+      // Sort by severity (highest first)
+      const sortedHotspots = nearbyHotspots.sort((a, b) => b.severity - a.severity);
+      const waypoints = sortedHotspots.map(h => `${h.longitude},${h.latitude}`);
+
+      const response = await axios.get("http://localhost:5000/patrol_route", {
+        params: {
+          start: `${station.longitude},${station.latitude}`,
+          waypoints,
+        },
+      });
+
+      setRoute(response.data.features[0].geometry.coordinates);
+    } catch (error) {
+      console.error("Error fetching patrol route:", error);
+    }
+  };
+
   return (
     <>
       {loading && <div>Loading...</div>}
@@ -54,12 +97,16 @@ const Patrol = () => {
               key={station.id}
               position={[station.latitude, station.longitude]}
               icon={policeStationIcon}
+              eventHandlers={{
+                click: () => fetchPatrolRoute(station),
+              }}
             >
               <Popup>
                 <b>{station.name}</b> <br />
                 Address: {station.address} <br />
                 Latitude: {station.latitude} <br />
-                Longitude: {station.longitude}
+                Longitude: {station.longitude} <br />
+                <button onClick={() => fetchPatrolRoute(station)}>Generate Patrol Route</button>
               </Popup>
             </Marker>
           ))}
@@ -84,6 +131,14 @@ const Patrol = () => {
               </Popup>
             </CircleMarker>
           ))}
+
+          {route && (
+            <Polyline
+              positions={route.map(([lng, lat]) => [lat, lng])}
+              color="blue"
+              weight={4}
+            />
+          )}
         </MapContainer>
       )}
     </>
