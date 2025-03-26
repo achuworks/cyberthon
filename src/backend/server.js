@@ -50,6 +50,31 @@ app.get("/police_stations", (req, res) => {
     res.json(result);
   });
 });
+app.get("/crime-trends", (req, res) => {
+  const query = `
+    SELECT season, crime_type, COUNT(*) as count, AVG(severity) as avg_severity
+    FROM hotspots
+    GROUP BY season, crime_type
+    ORDER BY count DESC;
+  `;
+
+  db.query(query, (err, result) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    res.json(result);
+  });
+});
+app.get("/predict-crime", async (req, res) => {
+  try {
+    const { year } = req.query;
+    const response = await axios.get(`http://localhost:5001/predict?year=${year}`);
+    res.json(response.data);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 app.get("/patrol_route", async (req, res) => {
   console.log("Received patrol route request:", req.query);
 
@@ -61,9 +86,9 @@ app.get("/patrol_route", async (req, res) => {
       return res.status(400).json({ error: "Start and waypoints are required" });
     }
 
-    // Ensure waypoints is an array (if it's a string, convert it to an array)
+    
     if (!Array.isArray(waypoints)) {
-      waypoints = waypoints.split("|");  // Convert comma-separated string into an array
+      waypoints = waypoints.split("|");  
     }
 
     console.log("Fetching route with:", { start, waypoints });
@@ -74,8 +99,8 @@ app.get("/patrol_route", async (req, res) => {
         params: {
           api_key: ORS_API_KEY,
           start, 
-          end: waypoints[waypoints.length - 1], // Last waypoint as destination
-          waypoints: waypoints.join("|"), // Reconstruct waypoints
+          end: waypoints[waypoints.length - 1], 
+          waypoints: waypoints.join("|"), 
         },
       }
     );

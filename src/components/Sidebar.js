@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Sidebar, Menu, MenuItem } from 'react-pro-sidebar';
 import { Link, useLocation } from 'react-router-dom';
-import { AlignLeft, Map, FileText, Activity, Shield, AlertTriangle, BookOpen, BarChart2 ,CircleUserRound} from 'lucide-react';
+import { AlignLeft, Map,Activity, Shield, AlertTriangle, BookOpen, BarChart2 ,CircleUserRound,BrainCircuit} from 'lucide-react';
 import './Sidebar.css';
 
 function Sideebar() {
@@ -31,7 +31,7 @@ function Sideebar() {
                 color: active ? '#b6c8d9' : '#333',
                 backgroundColor: active ? '#13395e' : undefined,
                 fontSize: '16px',
-                padding: '16px 20px',
+                padding: '30px 20px',
                 marginBottom: '8px',
                 '&:hover': {
                   backgroundColor: '#e9ecef',
@@ -50,13 +50,6 @@ function Sideebar() {
           </MenuItem>
           
           <MenuItem 
-            icon={<Activity size={20} />}
-            component={<Link to="/behaviour" />} 
-            active={isActive("/behaviour")}
-          > 
-            Behavioural Analysis 
-          </MenuItem>
-          <MenuItem 
             icon={<Shield size={20} />}
             component={<Link to="/patrol" />} 
             active={isActive("/patrol")}
@@ -69,6 +62,20 @@ function Sideebar() {
             active={isActive("/accident")}
           > 
             Accident-prone area identification
+          </MenuItem>
+          <MenuItem 
+            icon={<Activity size={20} />}
+            component={<Link to="/behaviour" />} 
+            active={isActive("/behaviour")}
+          > 
+            Seasonal Crime Analysis 
+          </MenuItem>
+          <MenuItem 
+            icon={<BrainCircuit size={20} />}
+            component={<Link to="/trends" />} 
+            active={isActive("/trends")}
+          > 
+            Future Crime trends
           </MenuItem>
           <MenuItem 
             icon={<BookOpen size={20} />}

@@ -11,7 +11,7 @@ const policeStationIcon = new L.Icon({
   popupAnchor: [0, -30],
 });
 
-// Function to determine crime severity color
+
 const getCrimeColor = (severity) => {
   if (severity >= 5) return "red";     
   if (severity >= 3) return "orange";  
@@ -19,16 +19,16 @@ const getCrimeColor = (severity) => {
   return "blue";                        
 };
 
-// Function to calculate distance between two coordinates
+
 const getDistance = (lat1, lon1, lat2, lon2) => {
-  const R = 6371; // Earth’s radius in km
+  const R = 6371; 
   const dLat = (lat2 - lat1) * (Math.PI / 180);
   const dLon = (lon2 - lon1) * (Math.PI / 180);
   const a = Math.sin(dLat / 2) ** 2 +
             Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) *
             Math.sin(dLon / 2) ** 2;
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c; // Distance in km
+  return R * c; 
 };
 
 const Patrol = () => {
@@ -37,7 +37,7 @@ const Patrol = () => {
   const [route, setRoute] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [selectedSeason, setSelectedSeason] = useState("Spring"); // Default season
+  const [selectedSeason, setSelectedSeason] = useState("Spring"); 
   const patrolRadius = 20; 
 
   useEffect(() => {
@@ -48,7 +48,7 @@ const Patrol = () => {
         setStations(stationsResponse.data);
 
         const hotspotsResponse = await axios.get("http://localhost:5000/hotspots", {
-          params: { season: selectedSeason }, // Fetch hotspots based on season
+          params: { season: selectedSeason }, 
         });
 
         if (hotspotsResponse.data.length === 0) {
@@ -65,11 +65,10 @@ const Patrol = () => {
     };
 
     fetchData();
-  }, [selectedSeason]); // Refetch when season changes
+  }, [selectedSeason]); 
 
   const fetchPatrolRoute = async (station) => {
     try {
-      // Find hotspots within the patrol radius
       const nearbyHotspots = hotspots.filter(h =>
         getDistance(station.latitude, station.longitude, h.latitude, h.longitude) <= patrolRadius
       );
@@ -79,13 +78,11 @@ const Patrol = () => {
         return;
       }
 
-      // Sort hotspots by distance from the police station
       const sortedHotspots = nearbyHotspots.sort((a, b) =>
         getDistance(station.latitude, station.longitude, a.latitude, a.longitude) -
         getDistance(station.latitude, station.longitude, b.latitude, b.longitude)
       );
 
-      // Format waypoints for the API request
       const waypoints = sortedHotspots.map(h => `${h.longitude},${h.latitude}`).join("|");
 
       console.log("Fetching patrol route with waypoints:", waypoints);
@@ -103,7 +100,6 @@ const Patrol = () => {
         return;
       }
 
-      // Extract coordinates for the polyline
       setRoute(response.data.features[0].geometry.coordinates);
       console.log("Patrol route received:", response.data.features[0].geometry.coordinates);
     } catch (error) {
@@ -132,7 +128,7 @@ const Patrol = () => {
         <MapContainer center={[11.0168, 76.9558]} zoom={12} style={{ height: "850px", width: "100%" }}>
           <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
 
-          {/* Police Stations */}
+          
           {stations.map((station) => (
             <Marker
               key={station.id}
@@ -152,7 +148,7 @@ const Patrol = () => {
             </Marker>
           ))}
 
-          {/* Crime Hotspots */}
+          
           {hotspots.map((hotspot) => (
             <CircleMarker
               key={hotspot.id}
@@ -174,7 +170,7 @@ const Patrol = () => {
             </CircleMarker>
           ))}
 
-          {/* Patrol Route Polyline */}
+         
           {route && (
             <Polyline
               positions={route.map(([lng, lat]) => [lat, lng])}
