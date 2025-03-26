@@ -8,7 +8,7 @@
     height: 100vh;
     min-width: 260px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    background-color: #8ac5ff;
+    background-color: #000509;
     position: fixed;
     left: 0;
     top: 0;
@@ -37,7 +37,7 @@
   }
   
   .toggle-button:hover {
-    background-color: #e9ecef;
+    background-color: #0d3572;
   }
   
   .ps-menuitem-root {
@@ -56,7 +56,7 @@
   
   .ps-menu-button.ps-active,
   [data-active="true"] .ps-menu-button {
-    background-color: #06104b !important;
+    background-color: #980124 !important;
     color: #b6c8d9 !important;
   }
   
