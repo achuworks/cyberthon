@@ -11,6 +11,7 @@ const policeStationIcon = new L.Icon({
   popupAnchor: [0, -30],
 });
 
+// Function to determine crime severity color
 const getCrimeColor = (severity) => {
   if (severity >= 5) return "red";     
   if (severity >= 3) return "orange";  
@@ -18,14 +19,14 @@ const getCrimeColor = (severity) => {
   return "blue";                        
 };
 
-// Haversine formula to calculate the distance (in km) between two lat/lng points
+// Function to calculate distance between two coordinates
 const getDistance = (lat1, lon1, lat2, lon2) => {
-  const R = 6371; // Earth's radius in km
+  const R = 6371; // Earth’s radius in km
   const dLat = (lat2 - lat1) * (Math.PI / 180);
   const dLon = (lon2 - lon1) * (Math.PI / 180);
-  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+  const a = Math.sin(dLat / 2) ** 2 +
             Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) *
-            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+            Math.sin(dLon / 2) ** 2;
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c; // Distance in km
 };
@@ -36,40 +37,58 @@ const Patrol = () => {
   const [route, setRoute] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const patrolRadius = 20; // Define patrol coverage radius (in km)
+  const [selectedSeason, setSelectedSeason] = useState("Spring"); // Default season
+  const patrolRadius = 20; 
 
   useEffect(() => {
-    axios.get("http://localhost:5000/police_stations")
-      .then(response => setStations(response.data))
-      .catch(error => {
-        console.error("Error fetching police stations:", error);
-        setError("Failed to load police stations.");
-      });
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const stationsResponse = await axios.get("http://localhost:5000/police_stations");
+        setStations(stationsResponse.data);
 
-    axios.get("http://localhost:5000/hotspots")
-      .then(response => setHotspots(response.data))
-      .catch(error => {
-        console.error("Error fetching hotspots:", error);
-        setError("Failed to load hotspots.");
-      })
-      .finally(() => setLoading(false));
-  }, []);
+        const hotspotsResponse = await axios.get("http://localhost:5000/hotspots", {
+          params: { season: selectedSeason }, // Fetch hotspots based on season
+        });
+
+        if (hotspotsResponse.data.length === 0) {
+          console.warn("No hotspots found for season:", selectedSeason);
+        }
+
+        setHotspots(hotspotsResponse.data);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        setError("Failed to load data.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [selectedSeason]); // Refetch when season changes
 
   const fetchPatrolRoute = async (station) => {
     try {
-      // Filter hotspots within the defined patrol radius
+      // Find hotspots within the patrol radius
       const nearbyHotspots = hotspots.filter(h =>
         getDistance(station.latitude, station.longitude, h.latitude, h.longitude) <= patrolRadius
       );
 
       if (nearbyHotspots.length === 0) {
-        alert("No hotspots available in the surrounding area.");
+        alert("No hotspots available within patrol radius.");
         return;
       }
 
-      // Sort by severity (highest first)
-      const sortedHotspots = nearbyHotspots.sort((a, b) => b.severity - a.severity);
-      const waypoints = sortedHotspots.map(h => `${h.longitude},${h.latitude}`);
+      // Sort hotspots by distance from the police station
+      const sortedHotspots = nearbyHotspots.sort((a, b) =>
+        getDistance(station.latitude, station.longitude, a.latitude, a.longitude) -
+        getDistance(station.latitude, station.longitude, b.latitude, b.longitude)
+      );
+
+      // Format waypoints for the API request
+      const waypoints = sortedHotspots.map(h => `${h.longitude},${h.latitude}`).join("|");
+
+      console.log("Fetching patrol route with waypoints:", waypoints);
 
       const response = await axios.get("http://localhost:5000/patrol_route", {
         params: {
@@ -78,7 +97,15 @@ const Patrol = () => {
         },
       });
 
+      if (response.data.features.length === 0) {
+        console.warn("No valid route returned.");
+        alert("No valid patrol route available.");
+        return;
+      }
+
+      // Extract coordinates for the polyline
       setRoute(response.data.features[0].geometry.coordinates);
+      console.log("Patrol route received:", response.data.features[0].geometry.coordinates);
     } catch (error) {
       console.error("Error fetching patrol route:", error);
     }
@@ -88,10 +115,24 @@ const Patrol = () => {
     <>
       {loading && <div>Loading...</div>}
       {error && <div>{error}</div>}
+      <div>
+        <label htmlFor="season">Select Season: </label>
+        <select 
+          id="season" 
+          value={selectedSeason} 
+          onChange={(e) => setSelectedSeason(e.target.value)}
+        >
+          <option value="Winter">Winter</option>
+          <option value="Spring">Spring</option>
+          <option value="Summer">Summer</option>
+          <option value="Monsoon">Monsoon</option>
+        </select>
+      </div>
       {!loading && !error && (
         <MapContainer center={[11.0168, 76.9558]} zoom={12} style={{ height: "850px", width: "100%" }}>
           <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
 
+          {/* Police Stations */}
           {stations.map((station) => (
             <Marker
               key={station.id}
@@ -111,6 +152,7 @@ const Patrol = () => {
             </Marker>
           ))}
 
+          {/* Crime Hotspots */}
           {hotspots.map((hotspot) => (
             <CircleMarker
               key={hotspot.id}
@@ -132,6 +174,7 @@ const Patrol = () => {
             </CircleMarker>
           ))}
 
+          {/* Patrol Route Polyline */}
           {route && (
             <Polyline
               positions={route.map(([lng, lat]) => [lat, lng])}
