@@ -4,18 +4,18 @@ import {
 } from "recharts";
 
 const COLOR_PALETTE = [
-  '#FF6B6B',   // Vibrant Red
-  '#4ECDC4',   // Teal
-  '#45B7D1',   // Sky Blue
-  '#FDCB6E',   // Warm Yellow
-  '#6C5CE7',   // Purple
-  '#FF8A5B',   // Soft Orange
-  '#2ECC71',   // Emerald Green
-  '#AF7AC5',   // Lavender
-  '#5D6D7E',   // Slate Gray
-  '#F1948A',   // Pastel Pink
-  '#48C9B0',   // Mint
-  '#EC7063'    // Coral
+  '#FF6B6B',   
+  '#4ECDC4',   
+  '#45B7D1',   
+  '#FDCB6E',   
+  '#6C5CE7',   
+  '#FF8A5B',   
+  '#2ECC71',   
+  '#AF7AC5',   
+  '#5D6D7E',   
+  '#F1948A',   
+  '#48C9B0',   
+  '#EC7063'    
 ];
 
 const BehavioralAnalysis = () => {
@@ -65,7 +65,6 @@ const BehavioralAnalysis = () => {
         Crime Trends Analysis
       </h1>
 
-      {/* Date Range Selection */}
       <div className="flex justify-center gap-4 mb-8">
         <div className="flex items-center space-x-4">
           <label className="text-gray-700 font-semibold">From:</label>
@@ -93,7 +92,6 @@ const BehavioralAnalysis = () => {
         </button>
       </div>
 
-      {/* Loading/Error Handling */}
       {loading && (
         <div className="text-center mt-4 text-gray-600 animate-pulse">
           Loading crime data...

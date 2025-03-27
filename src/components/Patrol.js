@@ -11,14 +11,12 @@ const policeStationIcon = new L.Icon({
   popupAnchor: [0, -30],
 });
 
-
 const getCrimeColor = (severity) => {
   if (severity >= 5) return "red";     
   if (severity >= 3) return "orange";  
   if (severity === 1) return "#D5006D"; 
   return "blue";                        
 };
-
 
 const getDistance = (lat1, lon1, lat2, lon2) => {
   const R = 6371; 
@@ -94,7 +92,7 @@ const Patrol = () => {
         },
       });
 
-      if (response.data.features.length === 0) {
+      if (!response.data.features || response.data.features.length === 0) {
         console.warn("No valid route returned.");
         alert("No valid patrol route available.");
         return;
@@ -127,8 +125,6 @@ const Patrol = () => {
       {!loading && !error && (
         <MapContainer center={[11.0168, 76.9558]} zoom={12} style={{ height: "850px", width: "100%" }}>
           <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-
-          
           {stations.map((station) => (
             <Marker
               key={station.id}
@@ -147,8 +143,6 @@ const Patrol = () => {
               </Popup>
             </Marker>
           ))}
-
-          
           {hotspots.map((hotspot) => (
             <CircleMarker
               key={hotspot.id}
@@ -169,8 +163,6 @@ const Patrol = () => {
               </Popup>
             </CircleMarker>
           ))}
-
-         
           {route && (
             <Polyline
               positions={route.map(([lng, lat]) => [lat, lng])}
