@@ -1,105 +1,105 @@
 
 .sidebar-container {
-    position: relative;
-    height: 100vh;
-  }
-  
-  .app-sidebar {
-    height: 100vh;  
-    min-height: 100vh;
-    width: 260px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    background-color: #000509;
-    position: fixed;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    z-index: 900;
-    transition: all 0.3s ease;
-    padding-top: 60px;
-    display: flex;
-    flex-direction: column;
+  position: relative;
+  height: 100vh;
 }
 
-  
-  .toggle-button {
-    position: fixed;
-    top: 10px;
-    left: 10px;
-    z-index: 1000;
-    background-color: #f8f9fa;
-    border: 1px solid #7cfffd;
-    border-radius: 4px;
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
+.app-sidebar {
+  height: 100vh;  
+  min-height: 100vh;
+  width: 260px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  background-color: #000509;
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 900;
+  transition: all 0.3s ease;
+  padding-top: 60px;
+  display: flex;
+  flex-direction: column;
+}
+
+
+.toggle-button {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  z-index: 1000;
+  background-color: #f8f9fa;
+  border: 1px solid #7cfffd;
+  border-radius: 4px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.toggle-button:hover {
+  background-color: #0d3572;
+}
+
+.ps-menuitem-root {
+  margin-bottom: 8px !important;
+}
+
+.ps-menu-button {
+  font-size: 16px !important;
+  padding: 16px 20px !important;
+  line-height: 1.5 !important;
+}
+
+.ps-menu-button:hover {
+  background-color: #e9ecef !important;
+}
+
+.ps-menu-button.ps-active,
+[data-active="true"] .ps-menu-button {
+  background-color: #980124 !important;
+  color: #b6c8d9 !important;
+}
+
+.ps-menu-icon {
+  margin-right: 10px;
+}
+
+.main-content {
+  margin-left: 260px;
+  padding: 20px;
+  transition: margin-left 0.3s ease;
+  height: 100vh;  
+  overflow: auto;  
+}
+
+
+.main-content.sidebar-collapsed {
+  margin-left: 80px;
+}
+
+
+#root, 
+body, 
+html {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+@media (max-width: 768px) {
+  .app-sidebar {
+    left: -260px;
   }
   
-  .toggle-button:hover {
-    background-color: #0d3572;
-  }
-  
-  .ps-menuitem-root {
-    margin-bottom: 8px !important;
-  }
-  
-  .ps-menu-button {
-    font-size: 16px !important;
-    padding: 16px 20px !important;
-    line-height: 1.5 !important;
-  }
-  
-  .ps-menu-button:hover {
-    background-color: #e9ecef !important;
-  }
-  
-  .ps-menu-button.ps-active,
-  [data-active="true"] .ps-menu-button {
-    background-color: #980124 !important;
-    color: #b6c8d9 !important;
-  }
-  
-  .ps-menu-icon {
-    margin-right: 10px;
+  .app-sidebar.open {
+    left: 0;
   }
   
   .main-content {
-    margin-left: 260px;
-    padding: 20px;
-    transition: margin-left 0.3s ease;
-    height: 100vh;  
-    overflow: auto;  
+    margin-left: 0;
+  }
 }
-
-  
-  .main-content.sidebar-collapsed {
-    margin-left: 80px;
-  }
-  
-  
-  #root, 
-  body, 
-  html {
-    height: 100%;
-    margin: 0;
-    padding: 0;
-  }
-  
-  @media (max-width: 768px) {
-    .app-sidebar {
-      left: -260px;
-    }
-    
-    .app-sidebar.open {
-      left: 0;
-    }
-    
-    .main-content {
-      margin-left: 0;
-    }
-  }

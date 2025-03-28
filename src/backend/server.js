@@ -45,7 +45,42 @@ app.get("/police_stations", (req, res) => {
     res.json(result);
   });
 });
+app.get("/patrol_route", async (req, res) => {
+  console.log("Received patrol route request:", req.query);
 
+  try {
+    let { start, waypoints } = req.query;
+
+    if (!start || !waypoints) {
+      console.log(" Missing parameters!");
+      return res.status(400).json({ error: "Start and waypoints are required" });
+    }
+
+    if (!Array.isArray(waypoints)) {
+      waypoints = waypoints.split("|");
+    }
+
+    console.log("Fetching route with:", { start, waypoints });
+
+    const response = await axios.get(
+      "https://api.openrouteservice.org/v2/directions/driving-car",
+      {
+        params: {
+          api_key: ORS_API_KEY,
+          start, 
+          end: waypoints[waypoints.length - 1], 
+          waypoints: waypoints.join("|"), 
+        },
+      }
+    );
+
+    console.log("Route response received");
+    res.json(response.data);
+  } catch (error) {
+    console.error("Error in patrol route:", error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
 app.get("/crime-trends", (req, res) => {
   const { from_date, to_date } = req.query;
 
