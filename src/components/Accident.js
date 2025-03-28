@@ -43,8 +43,6 @@ const Accident = () => {
                 Accident Type: {accident.accident_type} <br />
                 Legal Reference: {accident.legal_reference} <br />
                 Date: {accident.date_occurred} <br />
-                Severity: {accident.severity} <br />
-                Remarks: {accident.remarks}
               </Popup>
             </CircleMarker>
           ))}
