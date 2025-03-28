@@ -81,6 +81,22 @@ app.get("/patrol_route", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+app.get("/api/legal", (req, res) => {
+  const query = `
+    SELECT DISTINCT crime_type, legal_section 
+    FROM hotspots 
+    WHERE legal_section IS NOT NULL AND legal_section <> ''
+    ORDER BY crime_type;
+  `;
+
+  db.query(query, (err, rows) => {
+    if (err) {
+      console.error("Database error:", err);
+      return res.status(500).json({ message: "Server error" });
+    }
+    res.json(rows);
+  });
+});
 app.get("/crime-trends", (req, res) => {
   const { from_date, to_date } = req.query;
 
@@ -108,7 +124,7 @@ app.get("/future-crime-trends", async (req, res) => {
   try {
     console.log('Attempting to fetch predictions from Python backend');
     const response = await axios.get("http://localhost:5001/predict-crimes", {
-      timeout: 10000 // 10 seconds timeout
+      timeout: 10000 
     });
     console.log('Predictions received:', response.data);
     res.json(response.data);
@@ -119,7 +135,7 @@ app.get("/future-crime-trends", async (req, res) => {
       response: error.response?.data
     });
 
-    // More comprehensive error response
+    
     res.status(500).json({ 
       error: "Error fetching predictions",
       details: error.message || 'Unknown error occurred',

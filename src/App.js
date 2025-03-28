@@ -6,6 +6,7 @@ import PatrolOptimization from "./components/Patrol";
 import Accident from "./components/Accident";
 import BehavioralAnalysis from "./components/BehavioralAnalysis";
 import CrimeTrendsPrediction from "./components/crimeTrends";
+import LegalClassification from "./components/LegalClassification";
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
           <Route path="/accident" element={<Accident />} />
           <Route path="/behaviour" element={<BehavioralAnalysis />} />
           <Route path="/trends" element={<CrimeTrendsPrediction />} />
+          <Route path="/legall" element={<LegalClassification />} />
           <Route path="/" element={<Map />} />
         </Routes>
       </div>
