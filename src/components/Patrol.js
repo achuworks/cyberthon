@@ -109,19 +109,7 @@ const Patrol = () => {
     <>
       {loading && <div>Loading...</div>}
       {error && <div>{error}</div>}
-      <div>
-        <label htmlFor="season">Select Season: </label>
-        <select 
-          id="season" 
-          value={selectedSeason} 
-          onChange={(e) => setSelectedSeason(e.target.value)}
-        >
-          <option value="Winter">Winter</option>
-          <option value="Spring">Spring</option>
-          <option value="Summer">Summer</option>
-          <option value="Monsoon">Monsoon</option>
-        </select>
-      </div>
+      
       {!loading && !error && (
         <MapContainer center={[11.0168, 76.9558]} zoom={12} style={{ height: "850px", width: "100%" }}>
           <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />

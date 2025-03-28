@@ -103,3 +103,33 @@ html {
     margin-left: 0;
   }
 }
+.language-selector {
+  margin: 10px;
+  text-align: center;
+}
+
+#languageDropdown {
+  width: 90%;
+  background-color: white !important;
+  border: 1px solid #ddd;
+  color: black !important;
+  text-align: left;
+  font-weight: bold;
+}
+
+.dropdown-menu {
+  width: 90%;
+  text-align: center;
+  background-color: white !important;
+  border: 1px solid #ddd;
+}
+
+.dropdown-item {
+  color: black !important;
+  padding: 8px 12px;
+  text-align: center;
+}
+
+.dropdown-item:hover {
+  background-color: #f8f9fa !important;
+}

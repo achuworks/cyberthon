@@ -52,6 +52,7 @@ const LeafletMap = () => {
                 Reported Incidents: {hotspot.reported_incidents} <br />
                 Severity: {hotspot.severity} <br />
                 Last Crime Date: {hotspot.last_crime_date} <br />
+                IPC Section:{hotspot.legal_section}<br />
                 Patrol Recommendations: {hotspot.patrol_recommendations}
               </Popup>
             </CircleMarker>
