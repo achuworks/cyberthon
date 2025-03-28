@@ -104,6 +104,29 @@ app.get("/crime-trends", (req, res) => {
     res.json(result);
   });
 });
+app.get("/future-crime-trends", async (req, res) => {
+  try {
+    console.log('Attempting to fetch predictions from Python backend');
+    const response = await axios.get("http://localhost:5001/predict-crimes", {
+      timeout: 10000 // 10 seconds timeout
+    });
+    console.log('Predictions received:', response.data);
+    res.json(response.data);
+  } catch (error) {
+    console.error('Detailed error in future-crime-trends:', {
+      message: error.message,
+      code: error.code,
+      response: error.response?.data
+    });
+
+    // More comprehensive error response
+    res.status(500).json({ 
+      error: "Error fetching predictions",
+      details: error.message || 'Unknown error occurred',
+      fullError: error.response?.data || {}
+    });
+  }
+});
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
