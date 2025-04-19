@@ -8,7 +8,7 @@ const LegalClassification = () => {
     fetch("http://localhost:5000/api/legal")
       .then((response) => response.json())
       .then((data) => {
-        console.log("Fetched Data:", data); // Debugging
+        console.log("Fetched Data:", data);
 
         const grouped = {};
         data.forEach(({ crime_type, legal_section }) => {

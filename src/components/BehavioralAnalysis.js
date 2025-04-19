@@ -76,7 +76,7 @@ const BehavioralAnalysis = () => {
     justifyContent: 'space-between',
     gap: '16px'
   }}>
-    {/* From Input */}
+   
     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
       <label style={{
         color: '#4a5568',
@@ -98,7 +98,7 @@ const BehavioralAnalysis = () => {
         }}
       />
     </div>
-    {/* To Input */}
+   
     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
       <label style={{
         color: '#4a5568',
@@ -120,7 +120,6 @@ const BehavioralAnalysis = () => {
         }}
       />
     </div>
-    {/* Analyze Button */}
     <button
       onClick={fetchCrimeTrends}
       style={{

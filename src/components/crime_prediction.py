@@ -1,5 +1,4 @@
 import pandas as pd
-import numpy as np
 from flask import Flask, jsonify
 from flask_cors import CORS
 import mysql.connector
@@ -10,7 +9,6 @@ from sklearn.pipeline import Pipeline
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_squared_error, mean_absolute_error
 import joblib
-import os
 
 app = Flask(__name__)
 CORS(app)
@@ -21,21 +19,18 @@ class CrimeTrendPredictor:
         self.data = None
 
     def connect_to_db(self):
-        """Connect to the MySQL database."""
         self.connection = mysql.connector.connect(
             host='localhost',
             user='root',
-            password='',  # Use environment variables in production
+            password='',
             database='crime_data'
         )
     
     def load_data(self):
-        """Load hotspots data from MySQL database."""
         query = "SELECT * FROM hotspots"
         self.data = pd.read_sql(query, self.connection)
 
     def preprocess_data(self):
-        """Preprocess crime data for machine learning."""
         self.data['month'] = pd.to_datetime(self.data['last_crime_date']).dt.month
         self.data['year'] = pd.to_datetime(self.data['last_crime_date']).dt.year
         
@@ -51,7 +46,6 @@ class CrimeTrendPredictor:
         return train_test_split(X, y, test_size=0.2, random_state=42)
 
     def create_preprocessing_pipeline(self):
-        """Create preprocessing pipeline for features."""
         numeric_features = ['latitude', 'longitude', 'severity', 'reported_incidents']
         categorical_features = ['crime_type', 'season', 'month']
         
@@ -64,7 +58,6 @@ class CrimeTrendPredictor:
         return preprocessor
 
     def train_model(self):
-        """Train Random Forest Regression model."""
         X_train, X_test, y_train, y_test = self.preprocess_data()
         preprocessor = self.create_preprocessing_pipeline()
         
@@ -87,7 +80,6 @@ class CrimeTrendPredictor:
         }
     
     def predict_future_crimes(self, input_data):
-        """Predict future crime incidents."""
         model = joblib.load('crime_prediction_model.pkl')
         predictions = model.predict(input_data)
         return predictions.tolist()
@@ -101,7 +93,6 @@ def predict_crimes():
     try:
         training_metrics = predictor.train_model()
         
-        # Use actual data from the database for predictions
         input_data = predictor.data[['latitude', 'longitude', 'crime_type', 'severity', 'month', 'season', 'reported_incidents']]
         
         predictions = predictor.predict_future_crimes(input_data)
