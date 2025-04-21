@@ -45,6 +45,7 @@ app.get("/police_stations", (req, res) => {
     res.json(result);
   });
 });
+
 app.get("/patrol_route", async (req, res) => {
   console.log("Received patrol route request:", req.query);
 
@@ -52,7 +53,7 @@ app.get("/patrol_route", async (req, res) => {
     let { start, waypoints } = req.query;
 
     if (!start || !waypoints) {
-      console.log(" Missing parameters!");
+      console.log("Missing parameters!");
       return res.status(400).json({ error: "Start and waypoints are required" });
     }
 
@@ -78,9 +79,10 @@ app.get("/patrol_route", async (req, res) => {
     res.json(response.data);
   } catch (error) {
     console.error("Error in patrol route:", error.message);
-    res.status(500).json({ error: error.message });
-  }
+    res.status(500).json({ error: error.message });
+  }
 });
+
 app.get("/api/legal", (req, res) => {
   const query = `
     SELECT DISTINCT crime_type, legal_section 
@@ -97,6 +99,7 @@ app.get("/api/legal", (req, res) => {
     res.json(rows);
   });
 });
+
 app.get("/crime-trends", (req, res) => {
   const { from_date, to_date } = req.query;
 
@@ -120,26 +123,35 @@ app.get("/crime-trends", (req, res) => {
     res.json(result);
   });
 });
+
 app.get("/future-crime-trends", async (req, res) => {
   try {
     console.log('Attempting to fetch predictions from Python backend');
+    
+    // Get prediction date from request parameters
+    const { prediction_date } = req.query;
+    console.log(`Prediction date requested: ${prediction_date}`);
+    
+    // Forward request to Python backend
     const response = await axios.get("http://localhost:5001/predict-crimes", {
-      timeout: 10000 
+      params: { prediction_date },
+      timeout: 20000 // Allow up to 20 seconds for predictions (model training can take time)
     });
-    console.log('Predictions received:', response.data);
+    
+    console.log(`Received predictions for ${response.data.predictions?.length || 0} locations`);
     res.json(response.data);
   } catch (error) {
-    console.error('Detailed error in future-crime-trends:', {
+    console.error('Error in future-crime-trends:', {
       message: error.message,
       code: error.code,
-      response: error.response?.data
+      response: error.response?.data || 'No response data'
     });
-
     
+    // Return a more helpful error message to the client
     res.status(500).json({ 
-      error: "Error fetching predictions",
-      details: error.message || 'Unknown error occurred',
-      fullError: error.response?.data || {}
+      error: "Failed to generate crime predictions",
+      details: error.message,
+      hint: "Make sure the Python prediction service is running on port 5001"
     });
   }
 });
