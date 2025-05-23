@@ -11,11 +11,14 @@ import {
   BarChart2,
   CircleUserRound,
   BrainCircuit,
+  Boxes,
 } from "lucide-react";
 import Dropdown from "react-bootstrap/Dropdown";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./Sidebar.css";
 import RobofyChat from "../chatbot";
+// Import the ReportForm component
+import ReportForm from "./Reportform";
 function SidebarComponent() {
   const location = useLocation();
   const currentPath = location.pathname;
@@ -91,8 +94,8 @@ function SidebarComponent() {
           <MenuItem icon={<BarChart2 size={20} />} component={<Link to="/report" />} active={currentPath === "/report"}>
             Report & Insights
           </MenuItem>
-          <MenuItem icon={<CircleUserRound size={20} />} component={<Link to="/profile" />} active={currentPath === "/profile"}>
-            Profile
+          <MenuItem icon={<Boxes size={20} />} component={<Link to="/resource" />} active={currentPath === "/resource"}>
+            Resource allocation
           </MenuItem>
         </Menu>
 
@@ -112,6 +115,9 @@ function SidebarComponent() {
           </Dropdown>
         </div>
       </Sidebar>
+
+      {/* Add ReportForm below the sidebar */}
+      <ReportForm />
 
       {/* Debugging: Check if RobofyChat is rendering */}
       {RobofyChat ? <RobofyChat style={{ color: "red" }} /> : <p>Chatbot failed to load</p>}

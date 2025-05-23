@@ -7,7 +7,8 @@ import Accident from "./components/Accident";
 import BehavioralAnalysis from "./components/BehavioralAnalysis";
 import CrimeTrendsPrediction from "./components/crimeTrends";
 import LegalClassification from "./components/LegalClassification";
-
+import Report from "./components/Report";
+import Dashboard from "./components/ResourceDash";
 function App() {
   return (
     <div style={{ display: "flex" }}>
@@ -20,6 +21,9 @@ function App() {
           <Route path="/behaviour" element={<BehavioralAnalysis />} />
           <Route path="/trends" element={<CrimeTrendsPrediction />} />
           <Route path="/legall" element={<LegalClassification />} />
+          <Route path="/report" element={<Report />} />
+          <Route path="/resource" element={<Dashboard />} />
+
           <Route path="/" element={<Map />} />
         </Routes>
       </div>

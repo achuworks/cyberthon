@@ -3,6 +3,9 @@ const express = require("express");
 const mysql = require("mysql");
 const cors = require("cors");
 const axios = require("axios");
+const fs = require("fs");
+const path = require("path");
+const PDFDocument = require("pdfkit");
 
 const app = express();
 app.use(cors());
@@ -24,6 +27,29 @@ db.connect((err) => {
     console.log("Connected to MySQL database.");
   }
 });
+const multer = require("multer");
+
+// Set up file upload handler
+const upload = multer({ dest: "uploads/" });
+
+app.post("/submit-report", upload.single("file"), (req, res) => {
+  const { type, description, location } = req.body;
+  const media_url = req.file ? req.file.path : null;
+
+  const query = `
+    INSERT INTO reports (type, description, location, media_url)
+    VALUES (?, ?, ?, ?)
+  `;
+
+  db.query(query, [type, description, location, media_url], (err, result) => {
+    if (err) {
+      console.error("Database insertion error:", err);
+      return res.status(500).json({ error: "Failed to insert report" });
+    }
+    res.json({ message: "Report submitted successfully", id: result.insertId });
+  });
+});
+
 
 app.get("/hotspots", (req, res) => {
   db.query("SELECT * FROM hotspots", (err, result) => {
@@ -31,6 +57,40 @@ app.get("/hotspots", (req, res) => {
     res.json(result);
   });
 });
+app.get("/resource-allocation", (req, res) => {
+  const query = `
+    SELECT 
+      hotspot_name, 
+      latitude, 
+      longitude, 
+      severity, 
+      average_incidents,
+      peak_incident_day
+    FROM hotspots
+    
+    ORDER BY severity DESC, average_incidents DESC
+    LIMIT 10;
+  `;
+
+  db.query(query, (err, result) => {
+    if (err) return res.status(500).json({ error: err.message });
+
+    const allocation = result.map((spot) => {
+      const patrolsNeeded = Math.ceil((spot.severity * spot.average_incidents) / 10);
+      return {
+        hotspot: spot.hotspot_name,
+        severity: spot.severity,
+        averageIncidents: spot.average_incidents,
+        coordinates: [spot.latitude, spot.longitude],
+        patrolsNeeded,
+        peakDay: spot.peak_incident_day,
+      };
+    });
+
+    res.json({ allocation });
+  });
+});
+
 
 app.get("/accident_data", (req, res) => {
   db.query("SELECT * FROM accident_data", (err, result) => {
@@ -68,9 +128,9 @@ app.get("/patrol_route", async (req, res) => {
       {
         params: {
           api_key: ORS_API_KEY,
-          start, 
-          end: waypoints[waypoints.length - 1], 
-          waypoints: waypoints.join("|"), 
+          start,
+          end: waypoints[waypoints.length - 1],
+          waypoints: waypoints.join("|"),
         },
       }
     );
@@ -100,6 +160,7 @@ app.get("/api/legal", (req, res) => {
   });
 });
 
+
 app.get("/crime-trends", (req, res) => {
   const { from_date, to_date } = req.query;
 
@@ -124,18 +185,17 @@ app.get("/crime-trends", (req, res) => {
   });
 });
 
+
 app.get("/future-crime-trends", async (req, res) => {
   try {
     console.log('Attempting to fetch predictions from Python backend');
     
-    // Get prediction date from request parameters
     const { prediction_date } = req.query;
     console.log(`Prediction date requested: ${prediction_date}`);
     
-    // Forward request to Python backend
     const response = await axios.get("http://localhost:5001/predict-crimes", {
       params: { prediction_date },
-      timeout: 20000 // Allow up to 20 seconds for predictions (model training can take time)
+      timeout: 20000
     });
     
     console.log(`Received predictions for ${response.data.predictions?.length || 0} locations`);
@@ -147,7 +207,6 @@ app.get("/future-crime-trends", async (req, res) => {
       response: error.response?.data || 'No response data'
     });
     
-    // Return a more helpful error message to the client
     res.status(500).json({ 
       error: "Failed to generate crime predictions",
       details: error.message,
@@ -155,6 +214,76 @@ app.get("/future-crime-trends", async (req, res) => {
     });
   }
 });
+
+
+app.post("/generate-report", async (req, res) => {
+  try {
+    const summaryQuery = `SELECT COUNT(*) AS total_incidents FROM hotspots;`;
+    const topHotspotsQuery = `
+      SELECT hotspot_name, SUM(reported_incidents) AS reported_incidents
+      FROM hotspots
+      GROUP BY hotspot_name
+      ORDER BY reported_incidents DESC
+      LIMIT 5;
+    `;
+    const crimeTrendQuery = `
+      SELECT crime_type, COUNT(*) AS total
+      FROM hotspots
+      GROUP BY crime_type;
+    `;
+
+    const [summary] = await new Promise((resolve, reject) => {
+      db.query(summaryQuery, (err, result) => {
+        if (err) reject(err);
+        else resolve(result);
+      });
+    });
+
+    const topHotspots = await new Promise((resolve, reject) => {
+      db.query(topHotspotsQuery, (err, result) => {
+        if (err) reject(err);
+        else resolve(result);
+      });
+    });
+
+    const crimeTrends = await new Promise((resolve, reject) => {
+      db.query(crimeTrendQuery, (err, result) => {
+        if (err) reject(err);
+        else resolve(result);
+      });
+    });
+
+    const doc = new PDFDocument();
+    let chunks = [];
+
+    doc.on('data', chunk => chunks.push(chunk));
+    doc.on('end', () => {
+      const result = Buffer.concat(chunks);
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', 'attachment; filename=Crime_Report.pdf');
+      res.send(result);
+    });
+
+    doc.fontSize(18).text("Crime Hotspot Report & Insights", { align: "center" });
+    doc.moveDown();
+    doc.fontSize(14).text(`Summary:\nTotal Incidents: ${summary.total_incidents}`);
+    doc.moveDown().text("Top 5 Hotspots:");
+    topHotspots.forEach(h => {
+      doc.text(`- ${h.hotspot_name}: ${h.reported_incidents} incidents`);
+    });
+    doc.moveDown().text("Crime Type Distribution:");
+    crimeTrends.forEach(c => {
+      doc.text(`- ${c.crime_type}: ${c.total} cases`);
+    });
+
+    doc.end();
+
+  } catch (error) {
+    console.error("Report generation failed:", error);
+    res.status(500).json({ error: "Internal server error", details: error.message });
+  }
+});
+
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
